@@ -1,0 +1,12 @@
+[test.js](https://github.com/user-attachments/files/34261111/test.js)[const assert=require('node:assert/strict');const E=require('./www/engine.js');let tests=0;const test=(name,fn)=>{fn();tests++;console.log('PASS',name)};const c=(r,s)=>({r,s});
+test('52 unique cards',()=>{let d=E.shuffle();assert.equal(d.length,52);assert.equal(new Set(d.map(E.id)).size,52)});
+test('single 2 spades highest',()=>assert.equal(E.compare([c(12,3)],[c(11,3)]),1));
+test('pair and triple',()=>{assert.equal(E.compare([c(9,0),c(9,1)],[c(8,2),c(8,3)]),1);assert.equal(E.classify([c(4,0),c(4,1),c(4,2)]).type,'Triple')});
+test('special straights order',()=>{const a=[c(11,0),c(12,1),c(0,2),c(1,3),c(2,0)],b=[c(12,0),c(0,1),c(1,2),c(2,3),c(3,0)],d=[c(7,0),c(8,1),c(9,2),c(10,3),c(11,0)];assert.equal(E.compare(a,b),1);assert.equal(E.compare(b,d),1);assert.equal(E.classify([c(8,0),c(9,1),c(10,2),c(11,3),c(12,0)]),null)});
+test('five card hierarchy',()=>{let straight=[0,1,2,3,4].map((r,i)=>c(r,i%4)),flush=[0,2,4,6,8].map(r=>c(r,2)),full=[c(5,0),c(5,1),c(5,2),c(3,0),c(3,1)],four=[c(7,0),c(7,1),c(7,2),c(7,3),c(0,0)],sf=[0,1,2,3,4].map(r=>c(r,3));assert.equal(E.compare(flush,straight),1);assert.equal(E.compare(full,flush),1);assert.equal(E.compare(four,full),1);assert.equal(E.compare(sf,four),1)});
+test('flush compares ranks before suit',()=>{let a=[2,4,6,8,11].map(r=>c(r,0)),b=[2,4,6,8,10].map(r=>c(r,3));assert.equal(E.compare(a,b),1)});
+test('opening must contain 3 diamond',()=>{let g=new E.Game();assert.equal(g.hands[g.turn].some(c=>E.id(c)===0),true);assert.equal(g.valid(g.turn,[c(0,0)]),true);assert.equal(g.pass(g.turn),false)});
+test('scoring penalties 5 11 13',()=>{let g=new E.Game();g.hands=[[c(0,0)],Array(5).fill(c(1,0)),Array(11).fill(c(2,0)),Array(13).fill(c(3,0))];g.turn=0;g.opening=true;assert.equal(g.play(0,[c(0,0)]),true);assert.deepEqual(g.delta,[66,-5,-22,-39]);assert.equal(g.scores.reduce((a,b)=>a+b,0),0)});
+test('100 complete AI games without illegal moves',()=>{for(let run=0;run<100;run++){let g=new E.Game(),steps=0;while(!g.finished&&steps++<250){let p=g.turn,opts=g.legal(p);if(!opts.length){assert.equal(g.pass(p),true)}else{let move=E.choose(g,p,['Easy','Medium','Hard','Expert'][p]);if(move)assert.equal(g.play(p,move),true);else assert.equal(g.pass(p),true)}}assert.equal(g.finished,true,`game ${run} stuck`);assert.equal(g.scores.reduce((a,b)=>a+b,0),0)}});
+console.log(`${tests} test groups passed`);
+Uploading test.js…]()
